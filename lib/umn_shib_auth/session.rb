@@ -2,15 +2,18 @@
 
 module UmnShibAuth
   class Session
-    attr_reader :eppn, :internet_id, :institution_tld, :emplid, :display_name
-    def initialize(*args)
-      options = args.extract_options!
+    attr_reader :internet_id, :institution_tld
+
+    def initialize(options = {}, request_env = {})
       options.symbolize_keys!
 
-      @eppn = options[:eppn]
-      @internet_id, @institution_tld = @eppn.split('@')
-      @emplid = options[:emplid]
-      @display_name = options[:display_name]
+      options.merge(request_env)
+
+      options.each do |name, value|
+        instance_variable_set("@#{name}", value)
+        self.class.send(:attr_accessor, name)
+      end
+      @internet_id, @institution_tld = @eppn.to_s.split('@')
     end
   end
 end

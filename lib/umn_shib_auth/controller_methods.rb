@@ -43,9 +43,10 @@ module UmnShibAuth
     end
 
     def authorized_session
-      UmnShibAuth::Session.new(eppn: request.env[UmnShibAuth.eppn_variable],
-                               emplid: request.env[UmnShibAuth.emplid_variable],
-                               display_name: request.env[UmnShibAuth.display_name_variable])
+      UmnShibAuth::Session.new({ eppn: request.env[UmnShibAuth.eppn_variable],
+                                 emplid: request.env[UmnShibAuth.emplid_variable],
+                                 display_name: request.env[UmnShibAuth.display_name_variable] },
+                               request.env)
     end
 
     ###############
