@@ -1,17 +1,29 @@
+# frozen_string_literal: true
+
 module UmnShibAuth
   module ControllerMethods
+    # rubocop:disable  Metrics/MethodLength
     def self.included(controller)
       controller.class_eval do
         if respond_to?(:helper_method)
-          helper_method :shib_login_and_redirect_url, :shib_logout_and_redirect_url, :shib_logout_url, :shib_umn_session, :shib_debug_env_vars
+          helper_method :shib_login_and_redirect_url,
+                        :shib_logout_and_redirect_url,
+                        :shib_logout_url,
+                        :shib_umn_session,
+                        :shib_debug_env_vars
         end
       end
 
       return unless UmnShibAuth.using_stub_internet_id?
+
+      # rubocop:disable Metrics/LineLength/AndOr
       Rails.logger.info "[umn_shib_auth] ENV['STUB_INTERNET_ID'] detected, shib_umn_session will be stubbed with internet_id=#{UmnShibAuth.stub_internet_id} for all requests.
               You can also hit this in the console via UmnShibAuth.session_stub
         "
+      # rubocop:enable Metrics/LineLength/AndOr
     end
+
+    # rubocop:enable  Metrics/MethodLength
 
     def shib_umn_session
       if UmnShibAuth.using_stub_internet_id?
@@ -59,7 +71,9 @@ module UmnShibAuth
     # use shib_logout_url if you can.
     #
     def shib_logout_and_redirect_url(redirect_url = nil)
-      logger.warn "WARNING: shib_logout_and_redirect_url is a dangerous function with Shibboleth because it does not log the user out of the IDP, consider using shib_logout_url"
+      # rubocop:disable Metrics/LineLength/AndOr
+      logger.warn 'WARNING: shib_logout_and_redirect_url is a dangerous function with Shibboleth because it does not log the user out of the IDP, consider using shib_logout_url'
+      # rubocop:enable Metrics/LineLength/AndOr
       redirect_url ||= request.url
       encoded_redirect_url = ERB::Util.url_encode(redirect_url)
       "https://#{request.host}/Shibboleth.sso/Logout?return=#{encoded_redirect_url}"
@@ -81,7 +95,7 @@ module UmnShibAuth
       end
     end
 
-    # rubocop:disable Style/AndOr
+    # rubocop:disable Style/AndOr, Metrics/LineLength/AndOr
     # disabling cop because `and` is idiomatic when returning in a controller
     # so the controller halts
     def redirect_to_shib_login
@@ -91,7 +105,8 @@ module UmnShibAuth
         redirect_to shib_login_and_redirect_url and return false
       end
     end
-    # rubocop:enable Style/AndOr
+
+    # rubocop:enable Style/AndOr, Metrics/LineLength/AndOr
 
     def shib_debug_env_vars
       s = '<ul>'
