@@ -14,7 +14,7 @@ module UmnShibAuth
         end
       end
 
-      return unless UmnShibAuth.using_stub_internet_id?
+      return unless UmnShibAuth.stubbing_enabled? && UmnShibAuth.using_stubs?
 
       # rubocop:disable Metrics/LineLength/AndOr
       Rails.logger.info "[umn_shib_auth] ENV['STUB_INTERNET_ID'] detected, shib_umn_session will be stubbed with internet_id=#{UmnShibAuth.stub_internet_id} for all requests.
@@ -91,7 +91,7 @@ module UmnShibAuth
     # Its a safety precaution
     #
     def shib_umn_auth_required
-      return true if UmnShibAuth.using_stub_internet_id?
+      return true if UmnShibAuth.stubbing_enabled? && UmnShibAuth.using_stubs?
 
       if shib_umn_session.nil?
         redirect_to_shib_login
