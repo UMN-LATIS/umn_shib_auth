@@ -6,10 +6,7 @@ module UmnShibAuth
 
     def initialize(options = {}, request_env = {})
       options.symbolize_keys!
-
-      options.merge(request_env)
-
-      options.each do |name, value|
+      options.merge(request_env).each do |name, value|
         instance_variable_set("@#{name}", value)
         self.class.send(:attr_accessor, name)
       end

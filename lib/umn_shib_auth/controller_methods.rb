@@ -26,7 +26,7 @@ module UmnShibAuth
     # rubocop:enable  Metrics/MethodLength
 
     def shib_umn_session
-      if UmnShibAuth.using_stub_internet_id?
+      if UmnShibAuth.stubbing_enabled? && UmnShibAuth.using_stubs?
         @shib_umn_session ||= stubbed_session
       elsif request.env[UmnShibAuth.eppn_variable].blank?
         @shib_umn_session = nil
@@ -37,9 +37,13 @@ module UmnShibAuth
     end
 
     def stubbed_session
-      UmnShibAuth::Session.new(eppn: UmnShibAuth.stub_internet_id,
-                               emplid: UmnShibAuth.stub_emplid,
-                               display_name: UmnShibAuth.stub_display_name)
+      if UmnShibAuth.stubbed_attributes?
+        UmnShibAuth::Session.new({}, UmnShibAuth.stubbed_attributes)
+      else
+        UmnShibAuth::Session.new(eppn: UmnShibAuth.stub_internet_id,
+                                 emplid: UmnShibAuth.stub_emplid,
+                                 display_name: UmnShibAuth.stub_display_name)
+      end
     end
 
     def authorized_session
@@ -96,7 +100,7 @@ module UmnShibAuth
       end
     end
 
-    # rubocop:disable Style/AndOr, Metrics/LineLength/AndOr
+    # rubocop:disable Style/AndOr
     # disabling cop because `and` is idiomatic when returning in a controller
     # so the controller halts
     def redirect_to_shib_login
@@ -107,7 +111,7 @@ module UmnShibAuth
       end
     end
 
-    # rubocop:enable Style/AndOr, Metrics/LineLength/AndOr
+    # rubocop:enable Style/AndOr
 
     def shib_debug_env_vars
       s = '<ul>'
