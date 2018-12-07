@@ -43,8 +43,9 @@ module UmnShibAuth
       begin
         stubbed_attributes = YAML.load_file("#{Rails.root}/config/stubbed_attributes.yml")
       rescue Errno::ENOENT
-        puts 'could not load file'
+        Rails.logger.error 'could not load config/stubbed_attributes.yml file'
       end
+      Rails.logger.info "attributes: #{stubbed_attributes}"
     end
     stubbed_attributes
   end
