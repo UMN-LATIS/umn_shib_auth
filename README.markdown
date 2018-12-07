@@ -90,21 +90,33 @@ new code like follows
     include UmnShibAuth::ReplacementForUmnAuthControllerMethods
 
 ## Stubbing the current user in development
-Two methods of stubbing will now be available, so that we are not limited to
-only the three following  
-
-
 During development, it's nice to be able to stub which user is currently logged
-in (short circuit the typical trip to the service provider). To do this, start
-your rails server with the environment variable `STUB_INTERNET_ID` set to the
-username you want to impersonate.
+in (short circuit the typical trip to the service provider). Two methods of 
+stubbing will now be available, so that we are not limited to only the three
+following attributes from the ENV variables:
 
-If you are getting emplid or display_name from shibboleth, you can also set the
-environment variables `STUB_EMPLID` and `STUB_DISPLAY_NAME`.
+### Configuration file 
+Add the following file: `config/stubbed-attributes.yml`  
+This should be a simple set of name->value pairs for any shibboleth attributes
+you wish to mock. 
 
-Both of these mechanisms only work in development and test environments to
-prevent this behavior accidentally being triggered in production environments.
+This file _will_ be reloaded on every request, so that if you edit it, the changes
+will be propogated to your running development server.
+ 
+The values in the configuration file will take precedence over the environment variables below:
 
+### Environment Variables
+You may use the following environment variables to stub as well. These will be 
+overridden by the use of the config file above:
+`STUB_INTERNET_ID`
+`STUB_EMPLID`
+`STUB_DISPLAY_NAME`
+
+### Safety checks!
+Both of these mechanisms only work in `development` and `test` environments to
+prevent this behavior accidentally being triggered in production (or staging)
+ environments.
+  
 ## Development
 
 - Fork the repo
