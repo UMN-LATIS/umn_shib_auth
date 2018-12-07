@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'active_support/dependencies/autoload'
 require 'action_controller'
 require 'umn_shib_auth'
@@ -16,28 +18,21 @@ RSpec.configure do |config|
 
   config.filter_run_when_matching :focus
   config.disable_monkey_patching!
-  if config.files_to_run.one?
-    config.default_formatter = 'doc'
-  end
+  config.default_formatter = 'doc' if config.files_to_run.one?
   config.order = :random
   Kernel.srand config.seed
 end
 
 class Rails
   class << self
-    attr_accessor :logger, :env
+    attr_accessor :logger, :env, :root
   end
 end
 
-Rails.logger = Logger.new("/dev/null")
-Rails.env = "test"
+Rails.logger = Logger.new('/dev/null')
+Rails.env = 'test'
+Rails.root = "#{__dir__}/fixtures"
 
 class DummyController < ActionController::Base
   include UmnShibAuth::ControllerMethods
-
-  # In a real Rails app that has a root route defined, this method exists
-  # But in our test setup, we don't have have this part of Rails configured.
-  # Rspec won't let us double a method that doesn't exist
-  # So we make this method exist just for our test controller
-  def root_path; end
 end

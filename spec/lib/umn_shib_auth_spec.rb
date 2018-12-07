@@ -50,78 +50,86 @@ RSpec.describe UmnShibAuth do
     end
   end
 
-  context "with set stub environment values" do
-    before do
-      ENV["STUB_INTERNET_ID"] = internet_id
-      ENV["STUB_EMPLID"] = emplid
-      ENV["STUB_DISPLAY_NAME"] = display_name
+  describe "use stub environment variables" do
+    context "with set stub environment values" do
+      before do
+        ENV["STUB_INTERNET_ID"] = internet_id
+        ENV["STUB_EMPLID"] = emplid
+        ENV["STUB_DISPLAY_NAME"] = display_name
+      end
+
+      after do
+        ENV.delete("STUB_INTERNET_ID")
+        ENV.delete("STUB_EMPLID")
+        ENV.delete("STUB_DISPLAY_NAME")
+      end
+
+      describe ".stub_internet_id" do
+        it "raises an error in a non dev/test environment" do
+          allow(Rails).to receive(:env).and_return("production")
+          expect { described_class.stub_internet_id }.to raise_error(UmnShibAuth::StubbingNotEnabled)
+        end
+
+        it "returns stub internet id in a dev/test environment" do
+          expect(described_class.stub_internet_id).to eq(internet_id)
+        end
+      end
+
+      describe ".stub_emplid" do
+        it "raises an error in a non dev/test environment" do
+          allow(Rails).to receive(:env).and_return("production")
+          expect { described_class.stub_emplid }.to raise_error(UmnShibAuth::StubbingNotEnabled)
+        end
+
+        it "returns stub internet id in a dev/test enviroment" do
+          expect(described_class.stub_emplid).to eq(emplid)
+        end
+
+        context "with blank stub emplid" do
+          before do
+            ENV.delete("STUB_EMPLID")
+          end
+
+          it "does not throw an error" do
+            expect { described_class.stub_emplid }.not_to raise_error
+          end
+
+          it "returns nil" do
+            expect(described_class.stub_emplid).to be_nil
+          end
+        end
+      end
+
+      describe ".stub_display_name" do
+        it "raises an error in a non dev/test environment" do
+          allow(Rails).to receive(:env).and_return("staging")
+          expect { described_class.stub_display_name }.to raise_error(UmnShibAuth::StubbingNotEnabled)
+        end
+
+        it "returns stub display name in a dev/test environment" do
+          expect(described_class.stub_display_name).to eq(display_name)
+        end
+
+        context "with blank stub display_name" do
+          before do
+            ENV.delete("STUB_DISPLAY_NAME")
+          end
+
+          it "does not throw an error" do
+            expect { described_class.stub_display_name }.not_to raise_error
+          end
+
+          it "returns nil" do
+            expect(described_class.stub_display_name).to be_nil
+          end
+        end
+      end
     end
+  end
 
-    after do
-      ENV.delete("STUB_INTERNET_ID")
-      ENV.delete("STUB_EMPLID")
-      ENV.delete("STUB_DISPLAY_NAME")
-    end
-
-    describe ".stub_internet_id" do
-      it "raises an error in a non dev/test environment" do
-        allow(Rails).to receive(:env).and_return("production")
-        expect { described_class.stub_internet_id }.to raise_error(UmnShibAuth::StubbingNotEnabled)
-      end
-
-      it "returns stub internet id in a dev/test environment" do
-        expect(described_class.stub_internet_id).to eq(internet_id)
-      end
-    end
-
-    describe ".stub_emplid" do
-      it "raises an error in a non dev/test environment" do
-        allow(Rails).to receive(:env).and_return("production")
-        expect { described_class.stub_emplid }.to raise_error(UmnShibAuth::StubbingNotEnabled)
-      end
-
-      it "returns stub internet id in a dev/test enviroment" do
-        expect(described_class.stub_emplid).to eq(emplid)
-      end
-
-      context "with blank stub emplid" do
-        before do
-          ENV.delete("STUB_EMPLID")
-        end
-
-        it "does not throw an error" do
-          expect { described_class.stub_emplid }.not_to raise_error
-        end
-
-        it "returns nil" do
-          expect(described_class.stub_emplid).to be_nil
-        end
-      end
-    end
-
-    describe ".stub_display_name" do
-      it "raises an error in a non dev/test environment" do
-        allow(Rails).to receive(:env).and_return("staging")
-        expect { described_class.stub_display_name }.to raise_error(UmnShibAuth::StubbingNotEnabled)
-      end
-
-      it "returns stub display name in a dev/test environment" do
-        expect(described_class.stub_display_name).to eq(display_name)
-      end
-
-      context "with blank stub display_name" do
-        before do
-          ENV.delete("STUB_DISPLAY_NAME")
-        end
-
-        it "does not throw an error" do
-          expect { described_class.stub_display_name }.not_to raise_error
-        end
-
-        it "returns nil" do
-          expect(described_class.stub_display_name).to be_nil
-        end
-      end
+  describe "test loading stubbed attributes" do
+    it "Checks for value foo" do
+      expect(UmnShibAuth.stubbed_attributes['foo']).to eq('bar')
     end
   end
 end

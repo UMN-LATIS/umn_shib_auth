@@ -115,6 +115,11 @@ RSpec.describe UmnShibAuth::ControllerMethods do
             # rubocop:disable Metrics/LineLength
             @login_url = "https://secret.umn.edu/Shibboleth.sso/Login?target=#{ERB::Util.url_encode('https://google.com')}"
             # rubocop:enable Metrics/LineLength
+            allow(UmnShibAuth).to receive(:stubbed_attributes).and_return({})
+          end
+
+          after do
+            allow(UmnShibAuth).to receive(:stubbed_attributes).and_call_original
           end
 
           it "redirects and returns false" do
@@ -125,11 +130,16 @@ RSpec.describe UmnShibAuth::ControllerMethods do
 
         context "and the request is an ajax request" do
           before do
+            allow(UmnShibAuth).to receive(:stubbed_attributes).and_return({})
             allow(request_double).to receive(:xml_http_request?).and_return(true)
             expect(controller).to receive(:root_path).and_return("https://app.umn.edu")
             # rubocop:disable Metrics/LineLength
             @login_url = "https://secret.umn.edu/Shibboleth.sso/Login?target=#{ERB::Util.url_encode('https://app.umn.edu')}"
             # rubocop:enable Metrics/LineLength
+          end
+
+          after do
+            allow(UmnShibAuth).to receive(:stubbed_attributes).and_call_original
           end
 
           it "renders javascript that will change the window location to the correct shib login" do
@@ -183,14 +193,6 @@ RSpec.describe UmnShibAuth::ControllerMethods do
         expect(controller).to receive(:render).with(js: "window.location.replace('#{@login_url}');")
         expect(controller.redirect_to_shib_login).to be_falsey
       end
-    end
-  end
-
-  describe "something something yaml file" do
-    yaml_data = { first_name: "first", last_name: "last" }
-    it "first name is in stubbed session" do
-      allow(UmnShibAuth).to receive(:stubbed_attributes).and_return(yaml_data)
-      expect(controller.stubbed_session.first_name).to eq("first")
     end
   end
 end

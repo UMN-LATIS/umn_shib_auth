@@ -38,7 +38,10 @@ module UmnShibAuth
 
     def stubbed_session
       if UmnShibAuth.stubbed_attributes?
-        UmnShibAuth::Session.new({}, UmnShibAuth.stubbed_attributes)
+        UmnShibAuth::Session.new(UmnShibAuth.stubbed_attributes,
+                                 eppn: UmnShibAuth.stub_internet_id,
+                                 emplid: UmnShibAuth.stub_emplid,
+                                 display_name: UmnShibAuth.stub_display_name)
       else
         UmnShibAuth::Session.new(eppn: UmnShibAuth.stub_internet_id,
                                  emplid: UmnShibAuth.stub_emplid,
