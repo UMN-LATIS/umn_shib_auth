@@ -1,20 +1,32 @@
+# frozen_string_literal: true
+
 module UmnShibAuth
   module ControllerMethods
+    # rubocop:disable  Metrics/MethodLength
     def self.included(controller)
       controller.class_eval do
         if respond_to?(:helper_method)
-          helper_method :shib_login_and_redirect_url, :shib_logout_and_redirect_url, :shib_logout_url, :shib_umn_session, :shib_debug_env_vars
+          helper_method :shib_login_and_redirect_url,
+                        :shib_logout_and_redirect_url,
+                        :shib_logout_url,
+                        :shib_umn_session,
+                        :shib_debug_env_vars
         end
       end
 
-      return unless UmnShibAuth.using_stub_internet_id?
+      return unless UmnShibAuth.stubbing_enabled? && UmnShibAuth.using_stubs?
+
+      # rubocop:disable Metrics/LineLength/AndOr
       Rails.logger.info "[umn_shib_auth] ENV['STUB_INTERNET_ID'] detected, shib_umn_session will be stubbed with internet_id=#{UmnShibAuth.stub_internet_id} for all requests.
               You can also hit this in the console via UmnShibAuth.session_stub
         "
+      # rubocop:enable Metrics/LineLength/AndOr
     end
 
+    # rubocop:enable  Metrics/MethodLength
+
     def shib_umn_session
-      if UmnShibAuth.using_stub_internet_id?
+      if UmnShibAuth.stubbing_enabled? && UmnShibAuth.using_stubs?
         @shib_umn_session ||= stubbed_session
       elsif request.env[UmnShibAuth.eppn_variable].blank?
         @shib_umn_session = nil
@@ -25,15 +37,23 @@ module UmnShibAuth
     end
 
     def stubbed_session
-      UmnShibAuth::Session.new(eppn: UmnShibAuth.stub_internet_id,
-                               emplid: UmnShibAuth.stub_emplid,
-                               display_name: UmnShibAuth.stub_display_name)
+      if UmnShibAuth.stubbed_attributes?
+        UmnShibAuth::Session.new(UmnShibAuth.stubbed_attributes,
+                                 eppn: UmnShibAuth.stub_internet_id,
+                                 emplid: UmnShibAuth.stub_emplid,
+                                 display_name: UmnShibAuth.stub_display_name)
+      else
+        UmnShibAuth::Session.new(eppn: UmnShibAuth.stub_internet_id,
+                                 emplid: UmnShibAuth.stub_emplid,
+                                 display_name: UmnShibAuth.stub_display_name)
+      end
     end
 
     def authorized_session
-      UmnShibAuth::Session.new(eppn: request.env[UmnShibAuth.eppn_variable],
-                               emplid: request.env[UmnShibAuth.emplid_variable],
-                               display_name: request.env[UmnShibAuth.display_name_variable])
+      UmnShibAuth::Session.new({ eppn: request.env[UmnShibAuth.eppn_variable],
+                                 emplid: request.env[UmnShibAuth.emplid_variable],
+                                 display_name: request.env[UmnShibAuth.display_name_variable] },
+                               request.env)
     end
 
     ###############
@@ -59,7 +79,9 @@ module UmnShibAuth
     # use shib_logout_url if you can.
     #
     def shib_logout_and_redirect_url(redirect_url = nil)
-      logger.warn "WARNING: shib_logout_and_redirect_url is a dangerous function with Shibboleth because it does not log the user out of the IDP, consider using shib_logout_url"
+      # rubocop:disable Metrics/LineLength/AndOr
+      logger.warn 'WARNING: shib_logout_and_redirect_url is a dangerous function with Shibboleth because it does not log the user out of the IDP, consider using shib_logout_url'
+      # rubocop:enable Metrics/LineLength/AndOr
       redirect_url ||= request.url
       encoded_redirect_url = ERB::Util.url_encode(redirect_url)
       "https://#{request.host}/Shibboleth.sso/Logout?return=#{encoded_redirect_url}"
@@ -72,7 +94,7 @@ module UmnShibAuth
     # Its a safety precaution
     #
     def shib_umn_auth_required
-      return true if UmnShibAuth.using_stub_internet_id?
+      return true if UmnShibAuth.stubbing_enabled? && UmnShibAuth.using_stubs?
 
       if shib_umn_session.nil?
         redirect_to_shib_login
@@ -91,6 +113,7 @@ module UmnShibAuth
         redirect_to shib_login_and_redirect_url and return false
       end
     end
+
     # rubocop:enable Style/AndOr
 
     def shib_debug_env_vars

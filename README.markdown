@@ -1,9 +1,8 @@
-About
-============
+# About
+
 UmnShibAuth is an authentication gem for Rails designed to replace the existing UmnAuth x500 plugin for use with Shibboleth.  This plugin should work for all versions of rails--it's been used in Rails 2 and 3.
 
-Installation
-============
+## Installation
 Add a reference to umn_shib_auth in your Gemfile:
 
     gem 'umn_shib_auth', git: 'git@github.umn.edu:asrweb/umn_shib_auth'
@@ -16,8 +15,7 @@ apache_mod_shib_display_name: true
 apache_mod_shib_employee_number: true
 ```
 
-Usage
-=====
+## Usage
 In your routes, define a [root route](http://guides.rubyonrails.org/routing.html#using-root)
 
 In application_controller.rb:
@@ -38,8 +36,18 @@ To access the shibboleth provided metadata, use one of `shib_umn_session.interne
 <p>My name is <%= shib_umn_session.display_name %></p>
 ```
 
-Behavior
-=====
+### All shibboleth attributes supported!
+In addition to `internet_id`, `emplid`, and `display_name`, any attributes passed from shibboleth
+will now be supported, with a name based on the `id` of the attribute in your `attribute-map.xml` 
+configuration file. These will be exposed as attributes on your `shib_umn_session`.
+
+As such, if you have an attribute `foo`, you would access it with `shib_umn_session.foo`.
+
+All behavior listed above (and below) is maintained for backwards compatibility.
+Also note if needing to use proxied HTTP headers, these additional attributes will not be available.  
+
+---
+## Behavior
 
 If an un-authenticated user makes a request, they will be redirected (status code 302) to 
 
@@ -55,9 +63,7 @@ In the case of a non-XHR request, shib will redirect the user to their originall
 
 But in the case of an XHR request we can not redirect the user to the same URL again. It will not behave the same because the redirect will be missing the "XMLHttpRequest" header that Rails relies on.
 
-Proxied HTTP headers
---------------------
-
+### Proxied HTTP headers
 You can tell umn_shib_auth which variable has the EPPN value (or other shibboleth provided values) if they are not
 the defaults (ex: `request.env('eppn')`). This is useful when using Torquebox or
 anytime `ShibUseHeaders On` is enabled in your apache config.
@@ -72,8 +78,7 @@ want to use something like this:
     UmnShibAuth.emplid_variable = 'HTTP_EMPLID'
     UmnShibAuth.display_name_variable = 'HTTP_NAME'
 
-Migrating
-=========
+## Migrating
 If you were using some flavor of the old UmnAuth filter
 linked from https://wiki.umn.edu/CAH/WebHome
 labeled "umn_auth for Rails 2.x (Joe Goggins).
@@ -84,28 +89,40 @@ new code like follows
     # include UmnAuth::ControllerMethods
     include UmnShibAuth::ReplacementForUmnAuthControllerMethods
 
-Stubbing the current user in development
-======
-
+## Stubbing the current user in development
 During development, it's nice to be able to stub which user is currently logged
-in (short circuit the typical trip to the service provider). To do this, start
-your rails server with the environment variable `STUB_INTERNET_ID` set to the
-username you want to impersonate.
+in (short circuit the typical trip to the service provider). Two methods of 
+stubbing will now be available, so that we are not limited to only the three
+following attributes from the ENV variables:
 
-If you are getting emplid or display_name from shibboleth, you can also set the
-environment variables `STUB_EMPLID` and `STUB_DISPLAY_NAME`.
+### Configuration file 
+Add the following file: `config/stubbed-attributes.yml`  
+This should be a simple set of name->value pairs for any shibboleth attributes
+you wish to mock. 
 
-Both of these mechanisms only work in development and test environments to
-prevent this behavior accidentally being triggered in production environments.
+This file _will_ be reloaded on every request, so that if you edit it, the changes
+will be propogated to your running development server.
+ 
+The values in the configuration file will take precedence over the environment variables below:
 
-Development
-======
+### Environment Variables
+You may use the following environment variables to stub as well. These will be 
+overridden by the use of the config file above:
+`STUB_INTERNET_ID`
+`STUB_EMPLID`
+`STUB_DISPLAY_NAME`
+
+### Safety checks!
+Both of these mechanisms only work in `development` and `test` environments to
+prevent this behavior accidentally being triggered in production (or staging)
+ environments.
+  
+## Development
 
 - Fork the repo
 - `./script/setup`
 
-Scripts
-======
+## Scripts
 - `./script/setup` installs dependencies
 - `./script/test` runs the tests
 - `./script/update` updates dependencies

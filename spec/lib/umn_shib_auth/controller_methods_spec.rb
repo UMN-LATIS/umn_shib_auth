@@ -1,30 +1,33 @@
-require_relative "../../spec_helper"
+# frozen_string_literal: true
+
+require_relative '../../spec_helper'
 require 'securerandom'
 
+# rubocop:disable Style/StringLiterals, Metrics/BlockLength
 RSpec.describe UmnShibAuth::ControllerMethods do
   let(:request_double) { instance_double(ActionDispatch::Request) }
-  let(:controller)     { DummyController.new }
-  let(:eppn_var)       { 'HTTP_EPPN' }
-  let(:internet_id)    { 'asdf' }
-  let(:eppn)           { "#{internet_id}@blah.edu" }
-  let(:emplid)         { rand(10**7).to_s.rjust(7, '0') }
-  let(:emplid_var)     { 'HTTP_EMPLOYEENUMBER' }
-  let(:display_name)   { SecureRandom.hex }
-  let(:name_var)       { 'HTTP_DISPLAYNAME' }
-  let(:env_double)     { { eppn_var => eppn, emplid_var => emplid, name_var => display_name } }
+  let(:controller) { DummyController.new }
+  let(:eppn_var) { 'HTTP_EPPN' }
+  let(:internet_id) { 'asdf' }
+  let(:eppn) { "#{internet_id}@blah.edu" }
+  let(:emplid) { rand(10**7).to_s.rjust(7, '0') }
+  let(:emplid_var) { 'HTTP_EMPLOYEENUMBER' }
+  let(:display_name) { SecureRandom.hex }
+  let(:name_var) { 'HTTP_DISPLAYNAME' }
+  let(:env_double) { { eppn_var => eppn, emplid_var => emplid, name_var => display_name } }
 
   before do
     UmnShibAuth.eppn_variable = eppn_var
     UmnShibAuth.emplid_variable = emplid_var
     UmnShibAuth.display_name_variable = name_var
     allow(request_double).to receive(:xml_http_request?).and_return(false)
-    allow(UmnShibAuth).to receive(:stubbing_enabled?).and_return(false)
   end
 
   describe "A proxied shib app" do
     before do
       allow(request_double).to receive(:env).and_return(env_double)
       allow(controller).to receive(:request).and_return(request_double)
+      allow(UmnShibAuth).to receive(:stubbing_enabled?).and_return(false)
     end
 
     it "overrides default eppn var" do
@@ -66,14 +69,18 @@ RSpec.describe UmnShibAuth::ControllerMethods do
       let(:shib_identity_provider) { "login-test.umn.edu" }
 
       it "returns encoded test logout URL" do
+        # rubocop:disable Metrics/LineLength
         expect(controller.shib_logout_url).to eq "https://#{host}/Shibboleth.sso/Logout?return=https%3A%2F%2F#{shib_identity_provider}%2Fidp%2Fprofile%2FLogout"
+        # rubocop:enable Metrics/LineLength
       end
     end
     context "production IDP" do
       let(:shib_identity_provider) { "login.umn.edu" }
 
       it "returns encoded production logout URL" do
+        # rubocop:disable Metrics/LineLength
         expect(controller.shib_logout_url).to eq "https://#{host}/Shibboleth.sso/Logout?return=https%3A%2F%2F#{shib_identity_provider}%2Fidp%2Fprofile%2FLogout"
+        # rubocop:enable Metrics/LineLength
       end
     end
   end
@@ -105,7 +112,14 @@ RSpec.describe UmnShibAuth::ControllerMethods do
         context "and the request is not an ajax request" do
           before do
             allow(request_double).to receive(:xml_http_request?).and_return(false)
+            # rubocop:disable Metrics/LineLength
             @login_url = "https://secret.umn.edu/Shibboleth.sso/Login?target=#{ERB::Util.url_encode('https://google.com')}"
+            # rubocop:enable Metrics/LineLength
+            allow(UmnShibAuth).to receive(:stubbed_attributes).and_return({})
+          end
+
+          after do
+            allow(UmnShibAuth).to receive(:stubbed_attributes).and_call_original
           end
 
           it "redirects and returns false" do
@@ -116,9 +130,16 @@ RSpec.describe UmnShibAuth::ControllerMethods do
 
         context "and the request is an ajax request" do
           before do
+            allow(UmnShibAuth).to receive(:stubbed_attributes).and_return({})
             allow(request_double).to receive(:xml_http_request?).and_return(true)
             expect(controller).to receive(:root_path).and_return("https://app.umn.edu")
+            # rubocop:disable Metrics/LineLength
             @login_url = "https://secret.umn.edu/Shibboleth.sso/Login?target=#{ERB::Util.url_encode('https://app.umn.edu')}"
+            # rubocop:enable Metrics/LineLength
+          end
+
+          after do
+            allow(UmnShibAuth).to receive(:stubbed_attributes).and_call_original
           end
 
           it "renders javascript that will change the window location to the correct shib login" do
@@ -175,3 +196,4 @@ RSpec.describe UmnShibAuth::ControllerMethods do
     end
   end
 end
+# rubocop:enable Style/StringLiterals, Metrics/BlockLength
