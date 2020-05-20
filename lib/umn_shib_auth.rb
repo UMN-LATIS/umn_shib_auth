@@ -16,7 +16,8 @@ module UmnShibAuth
   end
 
   def self.using_stub_internet_id?
-    ENV.key?('STUB_INTERNET_ID')
+    stubbing_enabled? &&
+      (stubbed_attributes.key?('internet_id') || ENV.key?('STUB_INTERNET_ID'))
   end
 
   def self.stubbing_enabled?
@@ -30,7 +31,12 @@ module UmnShibAuth
   def self.stub_internet_id
     raise StubbingNotEnabled unless stubbing_enabled?
 
-    ENV['STUB_INTERNET_ID'] || ENV['STUB_X500']
+    parsed_internet_id || ENV['STUB_INTERNET_ID'] || ENV['STUB_X500']
+  end
+
+  def self.parsed_internet_id
+    stubbed_attributes['internet_id'] ||
+      stubbed_attributes[eppn_variable].to_s.split('@').first
   end
 
   def self.stubbed_attributes?
@@ -38,28 +44,29 @@ module UmnShibAuth
   end
 
   def self.stubbed_attributes
+    return {} unless stubbing_enabled?
+
+    attributes_file = "#{Rails.root}/config/stubbed_attributes.yml"
     stubbed_attributes = {}
-    if stubbing_enabled?
-      begin
-        stubbed_attributes = YAML.load_file("#{Rails.root}/config/stubbed_attributes.yml")
-      rescue Errno::ENOENT
-        Rails.logger.error 'could not load config/stubbed_attributes.yml file'
-      end
-      Rails.logger.info "attributes: #{stubbed_attributes}"
+    begin
+      stubbed_attributes.merge!(YAML.load_file(attributes_file))
+    rescue Errno::ENOENT, Errno::ENOTDIR
+      Rails.logger.error "could not load #{attributes_file} file"
     end
+
     stubbed_attributes
   end
 
   def self.stub_emplid
     raise StubbingNotEnabled unless stubbing_enabled?
 
-    ENV['STUB_EMPLID']
+    stubbed_attributes[emplid_variable] || ENV['STUB_EMPLID']
   end
 
   def self.stub_display_name
     raise StubbingNotEnabled unless stubbing_enabled?
 
-    ENV['STUB_DISPLAY_NAME']
+    stubbed_attributes[display_name_variable] || ENV['STUB_DISPLAY_NAME']
   end
 
   set_global_defaults!
