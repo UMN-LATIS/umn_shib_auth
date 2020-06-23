@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### [Fixed]
+- Fix errors with shib attributes that aren't valid Ruby variable names
+  - https://github.umn.edu/asrweb/umn_shib_auth/pull/31
+
 ### [Added]
 - Allow any shib attribute
   - https://github.umn.edu/asrweb/umn_shib_auth/pull/26
