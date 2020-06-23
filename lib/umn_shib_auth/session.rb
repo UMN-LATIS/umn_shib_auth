@@ -7,8 +7,12 @@ module UmnShibAuth
     def initialize(options = {}, request_env = {})
       options.symbolize_keys!
       options.merge(request_env).each do |name, value|
-        instance_variable_set("@#{name}", value)
-        self.class.send(:attr_accessor, name)
+        begin
+          instance_variable_set("@#{name}", value)
+          self.class.send(:attr_accessor, name)
+        rescue NameError
+          nil
+        end
       end
       @internet_id, @institution_tld = @eppn.to_s.split('@')
     end

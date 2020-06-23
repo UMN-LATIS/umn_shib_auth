@@ -44,4 +44,33 @@ RSpec.describe UmnShibAuth::Session do
       end
     end
   end
+
+  describe "with additional shib session data" do
+    let(:additional_shib_data) { {} }
+
+    subject do
+      described_class.new(
+        {
+          eppn: eppn,
+          emplid: emplid,
+          display_name: display_name,
+        },
+        additional_shib_data
+      )
+    end
+
+    describe "when one of the keys is an invalid instance variable name" do
+      before do
+        additional_shib_data.merge("Shib-Handler": "test")
+      end
+
+      it "would fail if it tries to set the instance variable" do
+        expect { subject.instance_varible_set("@Shib-Handler") }.to raise_error(NameError)
+      end
+
+      it "does not set that instance variable" do
+        expect(subject.instance_variables).not_to include("Shib-Handler")
+      end
+    end
+  end
 end
