@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### [Changed]
+- Updated to Ruby 2.6.5
+  - Updated associated gems to latest versions
+- Removed binstubs from gem executables
+  - Per [the guides on building gems](https://guides.rubygems.org/make-your-own-gem/#adding-an-executable), executables for a gem should be
+  tied to the gem, not general binstubs.  This was generating errors in
+  projects that used this gem because of the conflict in executables.
+
 ## [2.3.0]
 
 ### [Fixed]
