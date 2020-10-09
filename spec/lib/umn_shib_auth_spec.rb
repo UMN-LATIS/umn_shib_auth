@@ -56,6 +56,7 @@ RSpec.describe UmnShibAuth do
         ENV["STUB_INTERNET_ID"] = internet_id
         ENV["STUB_EMPLID"] = emplid
         ENV["STUB_DISPLAY_NAME"] = display_name
+        allow(Rails).to receive(:root).and_return('/dev/null')
       end
 
       after do
@@ -127,9 +128,52 @@ RSpec.describe UmnShibAuth do
     end
   end
 
-  describe "test loading stubbed attributes" do
-    it "Checks for value foo" do
-      expect(UmnShibAuth.stubbed_attributes['foo']).to eq('bar')
+ # rubocop:enable Metrics/BlockLength
+  context 'Using stubbed attributes yml' do
+    it 'Can load stubbed attributes' do
+      stubbed_attributes = described_class.stubbed_attributes
+      expect(stubbed_attributes).to_not be_empty
+      expect(stubbed_attributes['eppn']).to eq('jenny@umn.edu')
+      expect(stubbed_attributes['displayName']).to eq('Jenny')
+      expect(stubbed_attributes['umnEmplId']).to eq('8675309')
+    end
+
+    it 'If file does not exist, do not load' do
+      allow(Rails).to receive(:root).and_return('/dev/null')
+      stubbed_attributes = described_class.stubbed_attributes
+      expect(stubbed_attributes).to be_empty
+    end
+
+    it 'If stubbing is not enabled, do not load' do
+      expect(described_class).to receive(:stubbing_enabled?).and_return(false)
+      expect(described_class.stubbed_attributes).to be_empty
+    end
+  end
+
+  context 'Use stubbed attributes over ENV variables' do
+    it 'Stubbed attributes can split out internet_id' do
+      expect(described_class.parsed_internet_id).to eq 'jenny'
+    end
+
+    it 'No stubbed attributes will return nil parsed internet id' do
+      allow(Rails).to receive(:root).and_return('/dev/null')
+      expect(described_class.parsed_internet_id).to be nil
+    end
+
+    it 'using_stub_internet_id? will trigger with stubbed attribute' do
+      expect(described_class.using_stub_internet_id?).to be true
+    end
+
+    it 'Stubbed Display name is Jenny' do
+      expect(described_class.stub_display_name).to eq('Jenny')
+    end
+
+    it 'Stubbed internet_id is jenny' do
+      expect(described_class.stub_internet_id).to eq('jenny')
+    end
+
+    it 'Stubbed emplid is 8675309' do
+      expect(described_class.stub_emplid).to eq('8675309')
     end
   end
 end

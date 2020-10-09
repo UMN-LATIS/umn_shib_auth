@@ -42,9 +42,9 @@ RSpec.describe UmnShibAuth::ControllerMethods do
     describe "stub session in use" do
       before do
         allow(UmnShibAuth).to receive(:using_stub_internet_id?).and_return(true)
-        ENV['STUB_INTERNET_ID'] = internet_id
-        ENV['STUB_EMPLID'] = emplid
-        ENV['STUB_DISPLAY_NAME'] = display_name
+        allow(UmnShibAuth).to receive(:stub_internet_id).and_return(internet_id)
+        allow(UmnShibAuth).to receive(:stub_emplid).and_return(emplid)
+        allow(UmnShibAuth).to receive(:stub_display_name).and_return(display_name)
       end
 
       it "should return a session with all values set" do
