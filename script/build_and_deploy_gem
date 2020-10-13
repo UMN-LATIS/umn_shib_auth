@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# script/build_and_deploy_gem: build the gem and upload it to artifactory
+
+set -e
+
+echo "==> Clearing out old gems"
+
+gemname=`ls *.gemspec | cut -d. -f1`
+
+[ -e $gemname-*.gem ] && rm $gemname-*.gem
+
+echo "==> Building new gem"
+
+gem build $gemname.gemspec
+
+echo "==> Pushing $gemname to artifactory"
+
+gem push $gemname-*.gem --host https://artifactory.umn.edu/artifactory/api/gems/asr-rubygems-local
