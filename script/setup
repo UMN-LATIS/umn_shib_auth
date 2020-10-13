@@ -17,4 +17,7 @@ if [ -z "$RAILS_ENV" ] && [ -z "$RACK_ENV" ]; then
   true
 fi
 
+echo "==> Running bundler-audit - this might take a little while"
+bin/bundle-audit check --update
+
 echo "==> App is now ready to go!"

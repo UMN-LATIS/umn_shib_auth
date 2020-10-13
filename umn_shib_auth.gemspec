@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'actionpack', '~> 6.0.3'
   s.add_development_dependency 'activesupport', '~> 6.0.3'
   s.add_development_dependency 'bundler', '2.1.4'
+  s.add_development_dependency 'bundler-audit'
   s.add_development_dependency 'overcommit', '~> 0.57'
   s.add_development_dependency 'rake', '~> 13.0'
   s.add_development_dependency 'rspec', '~> 3.9'
