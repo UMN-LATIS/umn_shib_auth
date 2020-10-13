@@ -25,6 +25,6 @@ fi
 
 if [ -f ".overcommit.yml" ]; then
 echo "==> Installing Overcommit hooks…"
-bundle exec overcommit
-bundle exec overcommit --sign
+bin/overcommit
+bin/overcommit --sign
 fi
