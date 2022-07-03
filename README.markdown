@@ -96,7 +96,7 @@ stubbing will now be available, so that we are not limited to only the three
 following attributes from the ENV variables:
 
 ### Configuration file 
-Add the following file: `config/stubbed-attributes.yml`  
+Add the following file: `config/stubbed_attributes.yml`  
 This should be a simple set of name->value pairs for any shibboleth attributes
 you wish to mock. 
 
